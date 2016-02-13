@@ -41,5 +41,8 @@ public class SalesOrder implements Serializable {
 		this.totalPrice = totalPrice;
 	}
 	
-	
+	@Override
+	public String toString() {
+		return "SalesOrder [orderNumber=" + orderNumber + ", customerId=" + customerId + ", totalPrice=" + totalPrice + "]";
+	}
 }

@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
@@ -11,7 +12,8 @@ import javax.persistence.Table;
 public class OrderLine implements Serializable {
 
 	private static final long serialVersionUID = -8136210230693664750L;
-	private String orderId, productId;
+	@Id	private String orderId;
+	@Id private String productId;
 	private int quantity;
 	
 	@Column(name = "ORDER_ID")
@@ -38,5 +40,8 @@ public class OrderLine implements Serializable {
 		this.quantity = quantity;
 	}
 	
-	
+	@Override
+	public String toString() {
+		return "OrderLine [orderId=" + orderId + ", productId=" + productId + ", quantity=" + quantity + "]";
+	}
 }

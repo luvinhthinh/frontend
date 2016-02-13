@@ -72,5 +72,9 @@ public class Customer implements Serializable {
 		this.limit = limit;
 	}
 	
-	
+	@Override
+	public String toString() {
+		return "Customer [id=" + id + ", name=" + name + ", address=" + address + 
+				", phone1=" + phone1 + ", phone2=" + phone2 + ", credit=" + credit + ", limit=" + limit + "]";
+	}
 }
