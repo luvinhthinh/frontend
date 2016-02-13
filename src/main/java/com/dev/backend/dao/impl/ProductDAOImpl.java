@@ -7,11 +7,11 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
-import com.dev.backend.dao.CustomerDAO;
-import com.dev.backend.domain.Customer;
+import com.dev.backend.dao.ProductDAO;
+import com.dev.backend.domain.Product;
 
-public class CustomerDAOImpl implements CustomerDAO{
-	
+public class ProductDAOImpl implements ProductDAO {
+
 	private SessionFactory sessionFactory;
 	 
 	public SessionFactory getSessionFactory() {
@@ -23,51 +23,52 @@ public class CustomerDAOImpl implements CustomerDAO{
 	}
 	
 	@Override
-	public void insert(Customer customer) {
+	public void insert(Product product) {
 		Session session = getSessionFactory().getCurrentSession();
 		session.beginTransaction();
-		session.save(customer);
+		session.save(product);
 		session.getTransaction().commit();
 	}
-		 
+
+	@Override
+	public void delete(Product product) {
+		Session session = getSessionFactory().getCurrentSession();
+		session.beginTransaction();
+		session.delete(product);
+		session.getTransaction().commit();
+	}
+
+	@Override
+	public void update(Product product) {
+		Session session = getSessionFactory().getCurrentSession();
+		session.beginTransaction();
+		session.update(product);
+		session.getTransaction().commit();
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Customer> selectAll() {
+	public List<Product> selectAll() {
 		Session session = getSessionFactory().getCurrentSession();
 		session.beginTransaction();
-		Criteria criteria = session.createCriteria(Customer.class);
-		List<Customer> customers = (List<Customer>) criteria.list();
+		Criteria criteria = session.createCriteria(Product.class);
+		List<Product> products = (List<Product>) criteria.list();
 		session.getTransaction().commit();
-		return customers;
-	}
-
-	@Override
-	public void delete(Customer customer) {
-		Session session = getSessionFactory().getCurrentSession();
-		session.beginTransaction();
-		session.delete(customer);
-		session.getTransaction().commit();
-	}
-
-	@Override
-	public void update(Customer customer) {
-		Session session = getSessionFactory().getCurrentSession();
-		session.beginTransaction();
-		session.update(customer);
-		session.getTransaction().commit();
+		return products;
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public Customer findCustomerById(String id) {
-		String hql = "from CUSTOMER where CUSTOMER_ID=" + id;
+	public Product findProductById(String id) {
+		String hql = "from PRODUCT where PRODUCT_ID=" + id;
         Query query = sessionFactory.getCurrentSession().createQuery(hql);
-        List<Customer> customerList = (List<Customer>) query.list();
+        List<Product> productList = (List<Product>) query.list();
          
-        if (customerList != null && !customerList.isEmpty()) {
-            return customerList.get(0);
+        if (productList != null && !productList.isEmpty()) {
+            return productList.get(0);
         }
          
         return null;
 	}
+
 }

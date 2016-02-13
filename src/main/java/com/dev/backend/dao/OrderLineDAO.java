@@ -10,4 +10,5 @@ public interface OrderLineDAO {
 	public void update(OrderLine customer);
 	public List<OrderLine> selectAll();
 	public OrderLine findOrderLineById(String orderId, String itemId);
+	public List<OrderLine> findProductByOrderId(String orderId);
 }

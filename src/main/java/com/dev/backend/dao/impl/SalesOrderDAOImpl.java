@@ -7,11 +7,11 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
-import com.dev.backend.dao.CustomerDAO;
-import com.dev.backend.domain.Customer;
+import com.dev.backend.dao.SalesOrderDAO;
+import com.dev.backend.domain.SalesOrder;
 
-public class CustomerDAOImpl implements CustomerDAO{
-	
+public class SalesOrderDAOImpl implements SalesOrderDAO {
+
 	private SessionFactory sessionFactory;
 	 
 	public SessionFactory getSessionFactory() {
@@ -23,51 +23,52 @@ public class CustomerDAOImpl implements CustomerDAO{
 	}
 	
 	@Override
-	public void insert(Customer customer) {
+	public void insert(SalesOrder salesOrder) {
 		Session session = getSessionFactory().getCurrentSession();
 		session.beginTransaction();
-		session.save(customer);
-		session.getTransaction().commit();
-	}
-		 
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<Customer> selectAll() {
-		Session session = getSessionFactory().getCurrentSession();
-		session.beginTransaction();
-		Criteria criteria = session.createCriteria(Customer.class);
-		List<Customer> customers = (List<Customer>) criteria.list();
-		session.getTransaction().commit();
-		return customers;
-	}
-
-	@Override
-	public void delete(Customer customer) {
-		Session session = getSessionFactory().getCurrentSession();
-		session.beginTransaction();
-		session.delete(customer);
+		session.save(salesOrder);
 		session.getTransaction().commit();
 	}
 
 	@Override
-	public void update(Customer customer) {
+	public void delete(SalesOrder salesOrder) {
 		Session session = getSessionFactory().getCurrentSession();
 		session.beginTransaction();
-		session.update(customer);
+		session.delete(salesOrder);
+		session.getTransaction().commit();
+	}
+
+	@Override
+	public void update(SalesOrder salesOrder) {
+		Session session = getSessionFactory().getCurrentSession();
+		session.beginTransaction();
+		session.update(salesOrder);
 		session.getTransaction().commit();
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public Customer findCustomerById(String id) {
-		String hql = "from CUSTOMER where CUSTOMER_ID=" + id;
+	public List<SalesOrder> selectAll() {
+		Session session = getSessionFactory().getCurrentSession();
+		session.beginTransaction();
+		Criteria criteria = session.createCriteria(SalesOrder.class);
+		List<SalesOrder> orders = (List<SalesOrder>) criteria.list();
+		session.getTransaction().commit();
+		return orders;
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public SalesOrder findSalesOrderById(String id) {
+		String hql = "from SALES_ORDER where ORDER_NUMBER=" + id;
         Query query = sessionFactory.getCurrentSession().createQuery(hql);
-        List<Customer> customerList = (List<Customer>) query.list();
+        List<SalesOrder> orderList = (List<SalesOrder>) query.list();
          
-        if (customerList != null && !customerList.isEmpty()) {
-            return customerList.get(0);
+        if (orderList != null && !orderList.isEmpty()) {
+            return orderList.get(0);
         }
          
         return null;
 	}
+
 }
