@@ -1,0 +1,13 @@
+package com.dev.backend.dao;
+
+import java.util.List;
+import com.dev.backend.domain.Product;
+
+public interface ProductDAO {
+	
+	public void insert(Product product);
+	public void delete(Product product);
+	public void update(Product product);
+	public List<Product> selectAll();
+	public Product findProductById(String id);
+}
