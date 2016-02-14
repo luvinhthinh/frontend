@@ -2,8 +2,6 @@ package com.dev.backend.controllers;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import com.dev.backend.domain.Customer;
 import com.dev.backend.service.CustomerService;
@@ -21,22 +18,20 @@ import com.dev.backend.service.CustomerService;
 public class CustomerController {
 	
 	CustomerService customerService;
-	
-	//-------------------Retrieve All Customers--------------------------------------------------------
     
-    @RequestMapping(value = "/customer/", method = RequestMethod.GET)
+    @RequestMapping(value = "/customer", method = RequestMethod.GET)
     public ResponseEntity<List<Customer>> listAllCustomers() {
-    	System.out.println("------------------------------------------------------------------------------------");
+    	System.out.println("Fetching All Customer");
         List<Customer> customers = customerService.selectAll();
+        
         if(customers.isEmpty()){
-            return new ResponseEntity<List<Customer>>(HttpStatus.NO_CONTENT);//You many decide to return HttpStatus.NOT_FOUND
+        	System.out.println("Zero record found !");
+            return new ResponseEntity<List<Customer>>(HttpStatus.NO_CONTENT);
         }
+        System.out.println("Record found : " + customers.size());
         return new ResponseEntity<List<Customer>>(customers, HttpStatus.OK);
     }
  
- 
-    //-------------------Retrieve Single Customer--------------------------------------------------------
-     
     @RequestMapping(value = "/customer/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Customer> getCustomer(@PathVariable("id") String id) {
         System.out.println("Fetching Customer with id " + id);
@@ -48,29 +43,30 @@ public class CustomerController {
         return new ResponseEntity<Customer>(customer, HttpStatus.OK);
     }
  
-     
-     
-    //-------------------Create a Customer--------------------------------------------------------
-     
-    @RequestMapping(value = "/customer/", method = RequestMethod.POST)
-    public ResponseEntity<Void> createCustomer(@RequestBody Customer customer, UriComponentsBuilder ucBuilder) {
-        System.out.println("Creating Customer " + customer.getName());
- 
+    @RequestMapping(value = "/customer", method = RequestMethod.POST)
+    public ResponseEntity<Void> createCustomer(@RequestBody Customer customer) {
         if (customerService.isCustomerExist(customer)) {
             System.out.println("A Customer with name " + customer.getName() + " already exist");
-            return new ResponseEntity<Void>(HttpStatus.CONFLICT);
+            System.out.println("Try updating ..." + customer.toString());
+            
+            Customer c = customerService.findCustomerById(customer.getId());
+            c.setId(customer.getId());
+			c.setName(customer.getName());
+			c.setAddress(customer.getAddress());
+			c.setPhone1(customer.getPhone1());
+			c.setPhone2(customer.getPhone2());
+			c.setLimit(customer.getLimit());
+			c.setCredit(customer.getCredit());
+            
+            customerService.update(c);
+            return new ResponseEntity<Void>(HttpStatus.OK);
+        }else{
+        	System.out.println("Try creating ..." + customer.toString());
+        	customerService.insert(customer);
+        	return new ResponseEntity<Void>(HttpStatus.CREATED);
         }
- 
-        customerService.insert(customer);
- 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(ucBuilder.path("/customer/{id}").buildAndExpand(customer.getId()).toUri());
-        return new ResponseEntity<Void>(headers, HttpStatus.CREATED);
     }
- 
-     
-    //------------------- Update a Customer --------------------------------------------------------
-     
+
     @RequestMapping(value = "/customer/{id}", method = RequestMethod.PUT)
     public ResponseEntity<Customer> updateCustomer(@PathVariable("id") String id, @RequestBody Customer customer) {
         System.out.println("Updating Customer " + id);
@@ -93,8 +89,6 @@ public class CustomerController {
         return new ResponseEntity<Customer>(currentCustomer, HttpStatus.OK);
     }
  
-    //------------------- Delete a Customer --------------------------------------------------------
-     
     @RequestMapping(value = "/customer/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<Customer> deleteCustomer(@PathVariable("id") String id) {
         System.out.println("Fetching & Deleting Customer with id " + id);
