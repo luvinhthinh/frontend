@@ -77,4 +77,8 @@ public class Customer implements Serializable {
 		return "Customer [id=" + id + ", name=" + name + ", address=" + address + 
 				", phone1=" + phone1 + ", phone2=" + phone2 + ", credit=" + credit + ", limit=" + limit + "]";
 	}
+	
+	public String[] toArray(){
+		return new String[] {id, name, phone1, credit+""};
+	}
 }

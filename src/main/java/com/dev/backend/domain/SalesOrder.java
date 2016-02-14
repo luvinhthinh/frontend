@@ -45,4 +45,8 @@ public class SalesOrder implements Serializable {
 	public String toString() {
 		return "SalesOrder [orderNumber=" + orderNumber + ", customerId=" + customerId + ", totalPrice=" + totalPrice + "]";
 	}
+	
+	public String[] toArray(){
+		return new String[] {orderNumber, customerId, totalPrice+""};
+	}
 }

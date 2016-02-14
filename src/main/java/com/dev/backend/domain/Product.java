@@ -53,5 +53,9 @@ public class Product implements Serializable{
 	public String toString() {
 		return "Product [id=" + id + ", description=" + description + ", price=" + price + ", quantity=" + quantity + "]";
 	}
+	
+	public String[] toArray(){
+		return new String[] {id, description, price+"", quantity+""};
+	}
 }
 	
