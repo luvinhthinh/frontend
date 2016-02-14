@@ -6,6 +6,9 @@
   
   	<mvc:annotation-driven/>
 	<context:component-scan base-package="com.dev.backend.controllers" />  
+	<bean
+	    class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter">
+	</bean>	
   
     <!-- for processing requests with annotated controller methods and set Message Convertors from the list of convertors -->
     <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
