@@ -7,6 +7,7 @@ import java.awt.Insets;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
+import com.dev.backend.domain.Customer;
 import com.dev.frontend.services.Services;
 
 public class EditCustomer extends EditContentPanel 
@@ -133,21 +134,53 @@ public class EditCustomer extends EditContentPanel
 
 	public boolean bindToGUI(Object o) 
 	{
-		// TODO by the candidate
 		/*
 		 * This method use the object returned by Services.readRecordByCode and should map it to screen widgets 
 		 */
+		if(o != null){
+			Customer c = (Customer)o;
+			txtCode.setText(c.getId());
+			txtAddress.setText(c.getAddress());
+			txtName.setText(c.getName());
+			txtPhone1.setText(c.getPhone1());
+			txtPhone2.setText(c.getPhone2());
+			txtCreditLimit.setText(c.getLimit()+"");
+			txtCurrentCredit.setText(c.getCredit() +"");
+			return true;
+		}
 		return false;
 	}
 
 	public Object guiToObject() 
 	{
-		// TODO by the candidate
 		/*
 		 * This method collect values from screen widgets and convert them to object of your type
 		 * This object will be used as a parameter of method Services.save
 		 */
-		return null;
+		Customer c = new Customer();
+		try{
+			c.setId(txtCode.getText());
+			c.setName(txtName.getText());
+			c.setAddress(txtAddress.getText());
+			c.setPhone1(txtPhone1.getText());
+			c.setPhone2(txtPhone2.getText());
+			try{
+				c.setLimit(Integer.parseInt(txtCreditLimit.getText()));
+			}catch(Exception e){
+				c.setLimit(0);
+			}
+			
+			try{
+				c.setCredit(Integer.parseInt(txtCurrentCredit.getText()));
+			}catch(Exception e){
+				c.setCredit(0);
+			}
+			
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		return c;
 	}
 
 	@Override
