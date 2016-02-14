@@ -3,9 +3,9 @@ package com.dev.backend.dao.impl;
 import java.util.List;
 
 import org.hibernate.Criteria;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
 
 import com.dev.backend.dao.CustomerDAO;
 import com.dev.backend.domain.Customer;
@@ -53,17 +53,19 @@ public class CustomerDAOImpl implements CustomerDAO{
 	public void update(Customer customer) {
 		Session session = getSessionFactory().getCurrentSession();
 		session.beginTransaction();
-		session.update(customer);
+		session.merge(customer);
 		session.getTransaction().commit();
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public Customer findCustomerById(String id) {
-		String hql = "from CUSTOMER where CUSTOMER_ID=" + id;
-        Query query = sessionFactory.getCurrentSession().createQuery(hql);
-        List<Customer> customerList = (List<Customer>) query.list();
-         
+		Session session = getSessionFactory().getCurrentSession();
+		session.beginTransaction();
+		Criteria criteria = session.createCriteria(Customer.class);
+		criteria.add(Restrictions.eq("id", id));
+		List<Customer> customerList = (List<Customer>) criteria.list();
+		
         if (customerList != null && !customerList.isEmpty()) {
             return customerList.get(0);
         }

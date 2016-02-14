@@ -3,9 +3,9 @@ package com.dev.backend.dao.impl;
 import java.util.List;
 
 import org.hibernate.Criteria;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
 
 import com.dev.backend.dao.SalesOrderDAO;
 import com.dev.backend.domain.SalesOrder;
@@ -60,14 +60,16 @@ public class SalesOrderDAOImpl implements SalesOrderDAO {
 	@Override
 	@SuppressWarnings("unchecked")
 	public SalesOrder findSalesOrderById(String id) {
-		String hql = "from SALES_ORDER where ORDER_NUMBER=" + id;
-        Query query = sessionFactory.getCurrentSession().createQuery(hql);
-        List<SalesOrder> orderList = (List<SalesOrder>) query.list();
-         
+		Session session = getSessionFactory().getCurrentSession();
+		session.beginTransaction();
+		Criteria criteria = session.createCriteria(SalesOrder.class);
+		criteria.add(Restrictions.eq("orderNumber", id));
+		List<SalesOrder> orderList = (List<SalesOrder>) criteria.list();
+		
         if (orderList != null && !orderList.isEmpty()) {
             return orderList.get(0);
-        }
-         
+        } 
+		         
         return null;
 	}
 

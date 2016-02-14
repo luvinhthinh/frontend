@@ -3,9 +3,9 @@ package com.dev.backend.dao.impl;
 import java.util.List;
 
 import org.hibernate.Criteria;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
 
 import com.dev.backend.dao.OrderLineDAO;
 import com.dev.backend.domain.OrderLine;
@@ -61,24 +61,26 @@ public class OrderLineDAOImpl implements OrderLineDAO {
 	@SuppressWarnings("unchecked")
 	public List<OrderLine> findProductByOrderId(String orderId) {
 		Session session = getSessionFactory().getCurrentSession();
-		String hql = "from ORDER_LINE where ORDER_ID=" + orderId;
-        Query query = session.createQuery(hql);
-        List<OrderLine> lines = (List<OrderLine>) query.list();
-        session.getTransaction().commit();
-		return lines;
+		session.beginTransaction();
+		Criteria criteria = session.createCriteria(OrderLine.class);
+		criteria.add(Restrictions.eq("orderId", orderId));
+		List<OrderLine> orderList = (List<OrderLine>) criteria.list();
+		
+		return orderList;
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public OrderLine findOrderLineById(String orderId, String itemId) {
 		Session session = getSessionFactory().getCurrentSession();
-		String hql = "from ORDER_LINE where ORDER_ID=" + orderId + "AND PRODUCT_ID="+itemId;
-        Query query = session.createQuery(hql);
-        List<OrderLine> line = (List<OrderLine>) query.list();
-        session.getTransaction().commit();
+		session.beginTransaction();
+		Criteria criteria = session.createCriteria(OrderLine.class);
+		criteria.add(Restrictions.eq("orderId", orderId));
+		criteria.add(Restrictions.eq("productId", itemId));
+		List<OrderLine> orderList = (List<OrderLine>) criteria.list();
          
-        if (line != null && !line.isEmpty()) {
-            return line.get(0);
+        if (orderList != null && !orderList.isEmpty()) {
+            return orderList.get(0);
         }
          
         return null;

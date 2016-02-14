@@ -3,9 +3,9 @@ package com.dev.backend.dao.impl;
 import java.util.List;
 
 import org.hibernate.Criteria;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
 
 import com.dev.backend.dao.ProductDAO;
 import com.dev.backend.domain.Product;
@@ -26,7 +26,7 @@ public class ProductDAOImpl implements ProductDAO {
 	public void insert(Product product) {
 		Session session = getSessionFactory().getCurrentSession();
 		session.beginTransaction();
-		session.save(product);
+		session.save(product); 
 		session.getTransaction().commit();
 	}
 
@@ -60,13 +60,15 @@ public class ProductDAOImpl implements ProductDAO {
 	@Override
 	@SuppressWarnings("unchecked")
 	public Product findProductById(String id) {
-		String hql = "from PRODUCT where PRODUCT_ID=" + id;
-        Query query = sessionFactory.getCurrentSession().createQuery(hql);
-        List<Product> productList = (List<Product>) query.list();
-         
+		Session session = getSessionFactory().getCurrentSession();
+		session.beginTransaction();
+		Criteria criteria = session.createCriteria(Product.class);
+		criteria.add(Restrictions.eq("id", id));
+		List<Product> productList = (List<Product>) criteria.list();
+		
         if (productList != null && !productList.isEmpty()) {
             return productList.get(0);
-        }
+        } 
          
         return null;
 	}
