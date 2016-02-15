@@ -6,6 +6,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -19,6 +20,8 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.table.DefaultTableModel;
 
+import com.dev.backend.domain.OrderLine;
+import com.dev.backend.domain.SalesOrder;
 import com.dev.frontend.panels.ComboBoxItem;
 import com.dev.frontend.services.Services;
 import com.dev.frontend.services.Utils;
@@ -213,20 +216,71 @@ public class EditSalesOrder extends EditContentPanel
 	}
 	
 	public boolean bindToGUI(Object o) {
-		// TODO by the candidate
 		/*
 		 * This method use the object returned by Services.readRecordByCode and should map it to screen widgets 
 		 */
+		clear();
+		if(o != null){
+			SalesOrder so = (SalesOrder) o;
+			this.txtOrderNum.setText(so.getOrderNumber());
+			this.txtTotalPrice.setText(so.getTotalPrice() + "");
+			
+			List<ComboBoxItem> customers = Services.listCurrentRecordRefernces(Services.TYPE_CUSTOMER);
+			for(ComboBoxItem customer : customers){
+				if(customer.getKey().equals(so.getCustomerId())){
+					this.txtCustomer.setSelectedItem(customer);
+					break;
+				}
+			}
+			List<OrderLine> orderLines = so.getOrderList();
+			for(OrderLine line : orderLines){
+				String productCode = line.getProductId();
+				int qty = line.getQuantity();
+				double price = Services.getProductPrice(productCode);
+				double totalPrice = qty * price;
+				defaultTableModel.addRow(new String[] { productCode, "" + qty, "" + price, "" + totalPrice });
+			}
+			
+			return true;
+		}
+		
 		return false;
 	}
 
 	public Object guiToObject() {
-		// TODO by the candidate
 		/*
 		 * This method collect values from screen widgets and convert them to object of your type
 		 * This object will be used as a parameter of method Services.save
 		 */
-		return null;
+		SalesOrder so = new SalesOrder();
+		so.setOrderNumber(txtOrderNum.getText());
+		
+		try{
+			so.setTotalPrice(Float.parseFloat(txtTotalPrice.getText()));
+		}catch(Exception e){
+			JOptionPane.showMessageDialog(this, "Invalid number format in Total Price field");
+			so.setTotalPrice(0);
+		}
+		
+		ComboBoxItem customer = (ComboBoxItem) this.txtCustomer.getSelectedItem();
+		so.setCustomerId(customer.getKey());
+		
+		List<OrderLine> orderLines = new ArrayList<OrderLine>();
+		int noOfRow = defaultTableModel.getRowCount();
+		for(int i = 0; i < noOfRow; i++){
+			OrderLine line = new OrderLine();
+			line.setOrderId(txtOrderNum.getText());
+			line.setProductId((String)defaultTableModel.getValueAt(i, 0));
+			try{
+				line.setQuantity(Integer.parseInt((String)defaultTableModel.getValueAt(i, 1)));
+			}catch(Exception e){
+				line.setQuantity(0);
+			}
+			orderLines.add(line);
+		}
+		so.setOrderList(orderLines);
+		
+		return so;
 	}
 
 	public int getObjectType()

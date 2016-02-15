@@ -31,6 +31,7 @@
                 <prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
                 <prop key="hibernate.current_session_context_class">thread</prop>
                 <prop key="hibernate.show_sql">false</prop>
+                <prop key="hibernate.id.new_generator_mappings">false</prop>
             </props>
         </property>
     </bean>
@@ -44,7 +45,7 @@
     <bean id="salesOrderDAO" class="com.dev.backend.dao.impl.SalesOrderDAOImpl">
         <property name="sessionFactory" ref="hibernate5AnnotatedSessionFactory" />
     </bean>
-    <bean id="OrderLineDAO" class="com.dev.backend.dao.impl.OrderLineDAOImpl">
+    <bean id="orderLineDAO" class="com.dev.backend.dao.impl.OrderLineDAOImpl">
         <property name="sessionFactory" ref="hibernate5AnnotatedSessionFactory" />
     </bean>
     

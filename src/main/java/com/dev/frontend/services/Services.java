@@ -28,15 +28,17 @@ public class Services
 			ObjectMapper mapper = new ObjectMapper();
 			if(objectType == TYPE_PRODUCT){
 				String body = mapper.writeValueAsString((Product)object);
-				Utils.httpPost("/product/", body);
+				Utils.httpPost("/product", body);
 				return object;
 			}else if (objectType == TYPE_CUSTOMER){
 				String body = mapper.writeValueAsString((Customer)object);
-				Utils.httpPost("/customer/", body);
+				Utils.httpPost("/customer", body);
 				return object;
 			}else{
-				String body = mapper.writeValueAsString((SalesOrder)object);
-				Utils.httpPost("/salesorder/", body);
+				SalesOrder so = (SalesOrder)object;
+				String soBody = mapper.writeValueAsString(so);
+				Utils.httpPost("/salesOrder", soBody);
+				
 				return object;
 				
 			}
@@ -62,8 +64,9 @@ public class Services
 				String line = Utils.httpGet("/customer/"+code);
 				return Utils.convertToObject(line, Customer.class);
 			}else{
-				String line = Utils.httpGet("/salesorder/"+code);
-				return Utils.convertToObject(line, SalesOrder.class);
+				String line = Utils.httpGet("/salesOrder/"+code);
+				SalesOrder so = (SalesOrder)Utils.convertToObject(line, SalesOrder.class);
+				return so;
 			}
 		}catch(Exception e){
 			e.printStackTrace();
@@ -85,7 +88,7 @@ public class Services
 			}else if (objectType == TYPE_CUSTOMER){
 				Utils.httpDelete("/customer/"+code);
 			}else{
-				Utils.httpDelete("/salesorder/"+code);
+				Utils.httpDelete("/salesOrder/"+code);
 			}
 		}catch(Exception e){
 			e.printStackTrace();
@@ -101,7 +104,7 @@ public class Services
 			}else if (objectType == TYPE_CUSTOMER){
 				return Utils.convertToList(Utils.httpGet("/customer/"), Customer.class);
 			}else{
-				return Utils.convertToList(Utils.httpGet("/salesorder/"), SalesOrder.class);
+				return Utils.convertToList(Utils.httpGet("/salesOrder/"), SalesOrder.class);
 			}
 		}catch(Exception e){
 			e.printStackTrace();
@@ -110,18 +113,48 @@ public class Services
 	}
 	public static List<ComboBoxItem> listCurrentRecordRefernces(int objectType) 
 	{	
-		//TODO by the candidate
 		/*
 		 * This method is called when a Combo Box need to be initialized and should
 		 * return list of ComboBoxItem which contains code and description/name for all records of specified type
 		 */
+		try{
+			if(objectType == TYPE_PRODUCT){
+				List<Object> pList =  Utils.convertToList(Utils.httpGet("/product/"), Product.class);
+				if(pList != null && !pList.isEmpty()){
+					List<ComboBoxItem> comboList = new ArrayList<ComboBoxItem>();
+					for(Object o : pList){
+						Product p = (Product)o;
+						ComboBoxItem cb = new ComboBoxItem(p.getId(), p.getDescription());
+						comboList.add(cb);
+					}
+					return comboList;
+				}
+				
+			}else if (objectType == TYPE_CUSTOMER){
+				List<Object> cList =  Utils.convertToList(Utils.httpGet("/customer/"), Customer.class);
+				if(cList != null && !cList.isEmpty()){
+					List<ComboBoxItem> comboList = new ArrayList<ComboBoxItem>();
+					for(Object o : cList){
+						Customer p = (Customer)o;
+						ComboBoxItem cb = new ComboBoxItem(p.getId(), p.getName());
+						comboList.add(cb);
+					}
+					return comboList;
+				}
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}		
+		
 		return new ArrayList<ComboBoxItem>();
 	}
 	public static double getProductPrice(String productCode) {
-		//TODO by the candidate
 		/*
 		 * This method is used to get unit price of product with the code passed as a parameter
 		 */
-		return 1;
+		String line = Utils.httpGet("/product/"+productCode);
+		Product p = (Product) Utils.convertToObject(line, Product.class);
+		
+		return p.getPrice();
 	}
 }

@@ -27,7 +27,31 @@
         <property name="customerDAO" ref="customerDAO" />
     </bean>
     
+    <bean id="productService" class="com.dev.backend.service.impl.ProductServiceImpl">
+        <property name="productDAO" ref="productDAO" />
+    </bean>
+    
+    <bean id="salesOrderService" class="com.dev.backend.service.impl.SalesOrderServiceImpl">
+        <property name="salesOrderDAO" ref="salesOrderDAO" />
+        <property name="orderLineDAO" ref="orderLineDAO" />
+    </bean>
+    
+    <bean id="orderLineService" class="com.dev.backend.service.impl.OrderLineServiceImpl">
+        <property name="orderLineDAO" ref="orderLineDAO" />
+    </bean>
+    
+    
     <bean id="customerController" class="com.dev.backend.controllers.CustomerController" scope="request">
         <property name="customerService" ref="customerService" />
     </bean>
+    
+    <bean id="productController" class="com.dev.backend.controllers.ProductController" scope="request">
+        <property name="productService" ref="productService" />
+    </bean>
+    
+    <bean id="salesOrderController" class="com.dev.backend.controllers.SalesOrderController" scope="request">
+        <property name="salesOrderService" ref="salesOrderService" />
+        <property name="orderLineService" ref="orderLineService" />
+    </bean>
+    
 </beans>  

@@ -5,6 +5,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 import com.dev.backend.domain.Customer;
@@ -167,6 +168,7 @@ public class EditCustomer extends EditContentPanel
 			try{
 				c.setLimit(Integer.parseInt(txtCreditLimit.getText()));
 			}catch(Exception e){
+				JOptionPane.showMessageDialog(this, "Invalid number format in Credit Limit field");
 				c.setLimit(0);
 			}
 			

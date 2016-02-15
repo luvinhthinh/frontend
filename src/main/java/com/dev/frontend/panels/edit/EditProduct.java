@@ -5,8 +5,10 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
+import com.dev.backend.domain.Product;
 import com.dev.frontend.services.Services;
 
 public class EditProduct extends EditContentPanel
@@ -81,21 +83,50 @@ public class EditProduct extends EditContentPanel
 
 	public boolean bindToGUI(Object o) 
 	{
-		// TODO by the candidate
 		/*
 		 * This method use the object returned by Services.readRecordByCode and should map it to screen widgets 
 		 */
+		if(o != null){
+			Product p = (Product)o;
+			txtCode.setText(p.getId());
+			txtDescription.setText(p.getDescription());
+			txtPrice.setText(p.getPrice()+"");
+			txtQuantity.setText(p.getQuantity()+"");
+			return true;
+		}
 		return false;
 	}
 
 	public Object guiToObject() 
 	{
-		// TODO by the candidate
 		/*
 		 * This method collect values from screen widgets and convert them to object of your type
 		 * This object will be used as a parameter of method Services.save
 		 */
-		return null;
+		Product p = new Product();
+		try{
+			p.setId(txtCode.getText());
+			p.setDescription(txtDescription.getText());
+			
+			try{
+				p.setPrice(Float.parseFloat(txtPrice.getText()));
+			}catch(Exception e){
+				JOptionPane.showMessageDialog(this, "Invalid number format in Price field");
+				p.setPrice(Float.parseFloat("0.0"));
+			}
+			
+			try{
+				p.setQuantity(Integer.parseInt(txtQuantity.getText()));
+			}catch(Exception e){
+				JOptionPane.showMessageDialog(this, "Invalid number format in Quantity field");
+				p.setQuantity(Integer.parseInt("0"));
+			}
+
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		return p;
 	}
 
 	public int getObjectType()
