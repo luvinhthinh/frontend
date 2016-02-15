@@ -1,0 +1,20 @@
+A . To build and package WAR file:
+	
+	mvn clean install
+
+B . To test the back end application
+
+	mvn clean test
+
+To deploy the web service, please follow the steps below: 
+
+	1) Package WAR file (see A)
+		
+	2) Copy war file to tomcat/webapps folder
+	
+	3) To start tomcat :
+		cd tomcat/bin 
+		./startup.bat
+	 
+	 
+ 
