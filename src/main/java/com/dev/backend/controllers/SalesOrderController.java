@@ -2,6 +2,7 @@ package com.dev.backend.controllers;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,34 +19,36 @@ import com.dev.backend.service.SalesOrderService;
 
 @RestController
 public class SalesOrderController {
+	private static final Logger logger = Logger.getLogger(SalesOrderController.class);
+	
 	SalesOrderService salesOrderService;
 	OrderLineService orderLineService;
 
 	@RequestMapping(value = "/salesOrder", method = RequestMethod.GET)
     public ResponseEntity<List<SalesOrder>> listAllSalesOrders() {
-    	System.out.println("Fetching All SalesOrder");
+    	logger.info("Fetching All SalesOrder");
         List<SalesOrder> salesOrders = salesOrderService.selectAll();
         
         if(salesOrders.isEmpty()){
-        	System.out.println("Zero record found !");
+        	logger.info("Zero record found !");
             return new ResponseEntity<List<SalesOrder>>(HttpStatus.NO_CONTENT);
         }
-        System.out.println("Record found : " + salesOrders.size());
+        logger.info("Record found : " + salesOrders.size());
         return new ResponseEntity<List<SalesOrder>>(salesOrders, HttpStatus.OK);
     }
  
     @RequestMapping(value = "/salesOrder/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SalesOrder> getSalesOrder(@PathVariable("id") String id) {
-        System.out.println("Fetching SalesOrder with id " + id);
+        logger.info("Fetching SalesOrder with id " + id);
         SalesOrder salesOrder = salesOrderService.findSalesOrderById(id);
-        System.out.println(salesOrder);
+        logger.info(salesOrder);
         if (salesOrder == null) {
-            System.out.println("SalesOrder with id " + id + " not found");
+            logger.info("SalesOrder with id " + id + " not found");
             return new ResponseEntity<SalesOrder>(HttpStatus.NOT_FOUND);
         }
         
         List<OrderLine> lines = orderLineService.findOrderLineByOrderNumber(id);
-        System.out.println("numberof order lines found in sales order : " + lines.size());
+        logger.info("numberof order lines found in sales order : " + lines.size());
         salesOrder.setOrderList(lines);
         
         return new ResponseEntity<SalesOrder>(salesOrder, HttpStatus.OK);
@@ -53,23 +56,32 @@ public class SalesOrderController {
     
     @RequestMapping(value = "/salesOrder", method = RequestMethod.POST)
     public ResponseEntity<Void> createSalesOrder(@RequestBody SalesOrder salesOrder) {
-        if (salesOrderService.isSalesOrderExist(salesOrder)) {
-            System.out.println("A SalesOrder with id " + salesOrder.getOrderNumber() + " already exist");
-            System.out.println("Try updating ..." + salesOrder.toString());
-            
-            SalesOrder so = salesOrderService.findSalesOrderById(salesOrder.getOrderNumber());
-            so.setOrderNumber(salesOrder.getOrderNumber());
-            so.setCustomerId(salesOrder.getCustomerId());
-            so.setTotalPrice(salesOrder.getTotalPrice());
-            so.setOrderList(salesOrder.getOrderList());
-            salesOrderService.update(so);
+        List<OrderLine> oList = salesOrderService.consolidateOrderLine(salesOrder.getOrderList());
+        salesOrder.setOrderList(oList);
+        
+    	if (salesOrderService.isSalesOrderExist(salesOrder)) {
+            logger.info("A SalesOrder with id " + salesOrder.getOrderNumber() + " already exist");
+            logger.info("Try updating ..." + salesOrder.toString());
+            if(salesOrderService.validate(salesOrder)){
+            	SalesOrder so = salesOrderService.findSalesOrderById(salesOrder.getOrderNumber());
+                so.setOrderNumber(salesOrder.getOrderNumber());
+                so.setCustomerId(salesOrder.getCustomerId());
+                so.setTotalPrice(salesOrder.getTotalPrice());
+                so.setOrderList(salesOrder.getOrderList());
+                salesOrderService.update(so);
 
-            return new ResponseEntity<Void>(HttpStatus.OK);
+                return new ResponseEntity<Void>(HttpStatus.OK);
+            }else{
+        		return new ResponseEntity<Void>(HttpStatus.FORBIDDEN);
+        	}
         }else{
-        	System.out.println("Try creating ..." + salesOrder.toString());
-        	salesOrderService.insert(salesOrder);
-        	
-        	return new ResponseEntity<Void>(HttpStatus.CREATED);
+        	logger.info("Try creating ..." + salesOrder.toString());
+        	if(salesOrderService.validate(salesOrder)){
+        		salesOrderService.insert(salesOrder);
+            	return new ResponseEntity<Void>(HttpStatus.CREATED);
+        	}else{
+        		return new ResponseEntity<Void>(HttpStatus.FORBIDDEN);
+        	}
         }
     }
 
@@ -77,8 +89,8 @@ public class SalesOrderController {
     @RequestMapping(value = "/orderLine", method = RequestMethod.POST)
 //    public ResponseEntity<Void> createOrderLine(@RequestBody OrderLine orderLine) {
 //        if (orderLineService.isOrderLineExist(orderLine)) {
-//            System.out.println("A OrderLine with id " + orderLine.getOrderId() + " already exist");
-//            System.out.println("Try updating ..." + orderLine.toString());
+//            logger.info("A OrderLine with id " + orderLine.getOrderId() + " already exist");
+//            logger.info("Try updating ..." + orderLine.toString());
 //            
 //            OrderLine ol = orderLineService.findOrderLine(orderLine.getOrderId(), orderLine.getProductId());
 //            ol.setOrderId(orderLine.getOrderId());
@@ -88,7 +100,7 @@ public class SalesOrderController {
 //            orderLineService.update(ol);
 //            return new ResponseEntity<Void>(HttpStatus.OK);
 //        }else{
-//        	System.out.println("Try creating ..." + orderLine.toString());
+//        	logger.info("Try creating ..." + orderLine.toString());
 //        	orderLineService.insert(orderLine);
 //        	return new ResponseEntity<Void>(HttpStatus.CREATED);
 //        }
@@ -96,25 +108,25 @@ public class SalesOrderController {
     
 //    @RequestMapping(value = "/orderLine/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 //    public ResponseEntity<List<OrderLine>> getOrderLineByOrderNumber(@PathVariable("id") String id) {
-//        System.out.println("Fetching SalesOrder with id " + id);
+//        logger.info("Fetching SalesOrder with id " + id);
 //        List<OrderLine> orderLines = orderLineService.findOrderLineByOrderNumber(id);
 //        
 //        if(orderLines.isEmpty()){
-//        	System.out.println("Zero order line found !");
+//        	logger.info("Zero order line found !");
 //            return new ResponseEntity<List<OrderLine>>(HttpStatus.NO_CONTENT);
 //        }
-//        System.out.println("Record found : " + orderLines.size());
+//        logger.info("Record found : " + orderLines.size());
 //        return new ResponseEntity<List<OrderLine>>(orderLines, HttpStatus.OK);
 //    }
  
  */
     @RequestMapping(value = "/salesOrder/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<SalesOrder> deleteSalesOrder(@PathVariable("id") String id) {
-        System.out.println("Fetching & Deleting SalesOrder with id " + id);
+        logger.info("Fetching & Deleting SalesOrder with id " + id);
  
         SalesOrder salesOrder = salesOrderService.findSalesOrderById(id);
         if (salesOrder == null) {
-            System.out.println("Unable to delete. SalesOrder with id " + id + " not found");
+            logger.info("Unable to delete. SalesOrder with id " + id + " not found");
             return new ResponseEntity<SalesOrder>(HttpStatus.NOT_FOUND);
         }
  

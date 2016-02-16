@@ -2,6 +2,7 @@ package com.dev.backend.controllers;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,27 +17,29 @@ import com.dev.backend.service.ProductService;
 
 @RestController
 public class ProductController {
+	private static final Logger logger = Logger.getLogger(ProductController.class);
+	
 	ProductService productService;
 
 	@RequestMapping(value = "/product", method = RequestMethod.GET)
     public ResponseEntity<List<Product>> listAllProducts() {
-    	System.out.println("Fetching All Product");
+    	logger.info("Fetching All Product");
         List<Product> products = productService.selectAll();
         
         if(products.isEmpty()){
-        	System.out.println("Zero record found !");
+        	logger.info("Zero record found !");
             return new ResponseEntity<List<Product>>(HttpStatus.NO_CONTENT);
         }
-        System.out.println("Record found : " + products.size());
+        logger.info("Record found : " + products.size());
         return new ResponseEntity<List<Product>>(products, HttpStatus.OK);
     }
  
     @RequestMapping(value = "/product/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Product> getProduct(@PathVariable("id") String id) {
-        System.out.println("Fetching Product with id " + id);
+        logger.info("Fetching Product with id " + id);
         Product product = productService.findProductById(id);
         if (product == null) {
-            System.out.println("Product with id " + id + " not found");
+            logger.info("Product with id " + id + " not found");
             return new ResponseEntity<Product>(HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<Product>(product, HttpStatus.OK);
@@ -45,8 +48,8 @@ public class ProductController {
     @RequestMapping(value = "/product", method = RequestMethod.POST)
     public ResponseEntity<Void> createProduct(@RequestBody Product product) {
         if (productService.isProductExist(product)) {
-            System.out.println("A Product with name " + product.getDescription() + " already exist");
-            System.out.println("Try updating ..." + product.toString());
+            logger.info("A Product with name " + product.getDescription() + " already exist");
+            logger.info("Try updating ..." + product.toString());
             
             Product p = productService.findProductById(product.getId());
             p.setId(product.getId());
@@ -57,7 +60,7 @@ public class ProductController {
             productService.update(p);
             return new ResponseEntity<Void>(HttpStatus.OK);
         }else{
-        	System.out.println("Try creating ..." + product.toString());
+        	logger.info("Try creating ..." + product.toString());
         	productService.insert(product);
         	return new ResponseEntity<Void>(HttpStatus.CREATED);
         }
@@ -65,11 +68,11 @@ public class ProductController {
  
     @RequestMapping(value = "/product/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<Product> deleteProduct(@PathVariable("id") String id) {
-        System.out.println("Fetching & Deleting Product with id " + id);
+        logger.info("Fetching & Deleting Product with id " + id);
  
         Product product = productService.findProductById(id);
         if (product == null) {
-            System.out.println("Unable to delete. Product with id " + id + " not found");
+            logger.info("Unable to delete. Product with id " + id + " not found");
             return new ResponseEntity<Product>(HttpStatus.NOT_FOUND);
         }
  
