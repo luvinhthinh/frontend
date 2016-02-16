@@ -138,7 +138,7 @@ public class EditCustomer extends EditContentPanel
 		/*
 		 * This method use the object returned by Services.readRecordByCode and should map it to screen widgets 
 		 */
-		if(o != null){
+		if(o != null && o instanceof Customer){
 			Customer c = (Customer)o;
 			txtCode.setText(c.getId());
 			txtAddress.setText(c.getAddress());
@@ -173,7 +173,7 @@ public class EditCustomer extends EditContentPanel
 			}
 			
 			try{
-				c.setCredit(Integer.parseInt(txtCurrentCredit.getText()));
+				c.setCredit(Float.parseFloat(txtCurrentCredit.getText()));
 			}catch(Exception e){
 				c.setCredit(0);
 			}

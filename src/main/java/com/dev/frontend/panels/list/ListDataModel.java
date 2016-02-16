@@ -27,7 +27,13 @@ public abstract class ListDataModel extends DefaultTableModel implements
 		return true;
 	}
 	public void clear() {
-		setRowCount(0);
+		try{
+			setRowCount(0);
+		}catch(Exception e){
+			System.out.println("Error on refreshing !");
+			setRowCount(0);
+		}
+		
 	}
 
 	public void onInit() 

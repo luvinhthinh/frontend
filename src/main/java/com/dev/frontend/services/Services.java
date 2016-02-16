@@ -28,17 +28,19 @@ public class Services
 			ObjectMapper mapper = new ObjectMapper();
 			if(objectType == TYPE_PRODUCT){
 				String body = mapper.writeValueAsString((Product)object);
-				Utils.httpPost("/product", body);
+				String response = Utils.httpPost("/product", body);
 				return object;
 			}else if (objectType == TYPE_CUSTOMER){
 				String body = mapper.writeValueAsString((Customer)object);
-				Utils.httpPost("/customer", body);
+				String response = Utils.httpPost("/customer", body);
 				return object;
 			}else{
 				SalesOrder so = (SalesOrder)object;
 				String soBody = mapper.writeValueAsString(so);
-				Utils.httpPost("/salesOrder", soBody);
-				
+				String response = Utils.httpPost("/salesOrder", soBody);
+				if(Utils.ERROR.equals(response)){
+					return response;
+				}				
 				return object;
 				
 			}
@@ -107,7 +109,7 @@ public class Services
 				return Utils.convertToList(Utils.httpGet("/salesOrder/"), SalesOrder.class);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			System.out.println("Error retrieving records!");
 		}		
 		return new ArrayList<Object>();
 	}

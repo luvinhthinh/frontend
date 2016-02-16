@@ -3,6 +3,7 @@ package com.dev.frontend.services;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.HttpResponse;
@@ -21,6 +22,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class Utils
 {
 	private static String baseURL = "http://localhost:8080/mono";
+	public static final String ERROR = "ERROR";
+	
 	public static Double parseDouble(String value)
 	{
 		if(value == null||value.isEmpty())
@@ -42,10 +45,16 @@ public class Utils
 			HttpClient client = new DefaultHttpClient();
 			HttpGet request = new HttpGet( baseURL + url);
 			HttpResponse response = client.execute(request);
-			BufferedReader rd = new BufferedReader (new InputStreamReader(response.getEntity().getContent()));
-			line = rd.readLine();
+			int status = response.getStatusLine().getStatusCode(); 
+			
+			if (200 <= status && status < 300 ){
+				BufferedReader rd = new BufferedReader (new InputStreamReader(response.getEntity().getContent()));
+				line = rd.readLine();
+			}else{
+				line = "{error_code: "+status+"}";
+			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("No Record Found !");
 		}
 		return line;
 	}
@@ -59,7 +68,7 @@ public class Utils
 			client.execute(request);
 			status = true;
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("Can't delete record !");
 		}
 		return status;
 	}
@@ -74,8 +83,15 @@ public class Utils
 			request.setHeader("Accept", "application/json");
 			request.setHeader("Content-type", "application/json");
 			HttpResponse response = client.execute(request);
-			BufferedReader rd = new BufferedReader (new InputStreamReader(response.getEntity().getContent()));
-			line = rd.readLine();
+			int status = response.getStatusLine().getStatusCode(); 
+			
+			if (200 <= status && status < 300 ){
+				BufferedReader rd = new BufferedReader (new InputStreamReader(response.getEntity().getContent()));
+				line = rd.readLine();
+			}else{
+				line = ERROR;
+			}
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -101,6 +117,9 @@ public class Utils
 	public static List<Object> convertToList(String json, Class valueType){
 		ObjectMapper mapper = new ObjectMapper();
 		try {
+			if("".equals(json)){
+				return new ArrayList<Object>();
+			}
 			return mapper.readValue(json, mapper.getTypeFactory().constructCollectionType(List.class, valueType));
 		} catch (JsonParseException e) {
 			e.printStackTrace();

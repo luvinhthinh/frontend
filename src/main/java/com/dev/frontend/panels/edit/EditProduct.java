@@ -86,7 +86,7 @@ public class EditProduct extends EditContentPanel
 		/*
 		 * This method use the object returned by Services.readRecordByCode and should map it to screen widgets 
 		 */
-		if(o != null){
+		if(o != null && o instanceof Product){
 			Product p = (Product)o;
 			txtCode.setText(p.getId());
 			txtDescription.setText(p.getDescription());

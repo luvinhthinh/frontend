@@ -220,28 +220,35 @@ public class EditSalesOrder extends EditContentPanel
 		 * This method use the object returned by Services.readRecordByCode and should map it to screen widgets 
 		 */
 		clear();
+		onInit();
 		if(o != null){
-			SalesOrder so = (SalesOrder) o;
-			this.txtOrderNum.setText(so.getOrderNumber());
-			this.txtTotalPrice.setText(so.getTotalPrice() + "");
-			
-			List<ComboBoxItem> customers = Services.listCurrentRecordRefernces(Services.TYPE_CUSTOMER);
-			for(ComboBoxItem customer : customers){
-				if(customer.getKey().equals(so.getCustomerId())){
-					this.txtCustomer.setSelectedItem(customer);
-					break;
+			if(o instanceof SalesOrder){
+				SalesOrder so = (SalesOrder) o;
+				this.txtOrderNum.setText(so.getOrderNumber());
+				this.txtTotalPrice.setText(so.getTotalPrice() + "");
+				
+				List<ComboBoxItem> customers = Services.listCurrentRecordRefernces(Services.TYPE_CUSTOMER);
+				for(ComboBoxItem customer : customers){
+					if(customer.getKey().equals(so.getCustomerId())){
+						this.txtCustomer.setSelectedItem(customer);
+						
+						break;
+					}
 				}
+				List<OrderLine> orderLines = so.getOrderList();
+				for(OrderLine line : orderLines){
+					String productCode = line.getProductId();
+					int qty = line.getQuantity();
+					double price = Services.getProductPrice(productCode);
+					double totalPrice = qty * price;
+					defaultTableModel.addRow(new String[] { productCode, "" + qty, "" + price, "" + totalPrice });
+				}
+				
+				return true;
+			}else{
+				JOptionPane.showMessageDialog(this, "Error adding/updating sales order ! \n Insufficient customer's credit or product quantity !");
+				return false;
 			}
-			List<OrderLine> orderLines = so.getOrderList();
-			for(OrderLine line : orderLines){
-				String productCode = line.getProductId();
-				int qty = line.getQuantity();
-				double price = Services.getProductPrice(productCode);
-				double totalPrice = qty * price;
-				defaultTableModel.addRow(new String[] { productCode, "" + qty, "" + price, "" + totalPrice });
-			}
-			
-			return true;
 		}
 		
 		return false;
