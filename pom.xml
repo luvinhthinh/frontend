@@ -20,6 +20,9 @@
         <!-- Hibernate / JPA -->
         <hibernate.version>5.1.0.Final</hibernate.version>
         
+        <!-- Tomcat -->
+        <tomcat.dir.webapps>C:\Users\User\workspace\apache-tomcat-8.0.28\webapps</tomcat.dir.webapps>
+        
 	</properties>
 	<dependencies>
 	    <dependency>  
@@ -31,6 +34,7 @@
 			<groupId>javax.servlet</groupId>  
 			<artifactId>javax.servlet-api</artifactId>  
 			<version>3.1.0</version>  
+			<scope>provided</scope>
 		</dependency>  
 		<dependency>
 			<groupId>org.hibernate</groupId>
@@ -73,6 +77,12 @@
 			<artifactId>spring-webmvc</artifactId>
 			<version>${spring-framework.version}</version>
 		</dependency>
+		<dependency>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-test</artifactId>
+		    <version>${spring-framework.version}</version>
+		    <scope>test</scope>
+		</dependency>
 		
 		<dependency>
             <groupId>mysql</groupId>
@@ -90,44 +100,67 @@
 			<version>4.5.1</version>
 		</dependency>
 		
-		
-		
-		<dependency>
-		    <groupId>org.mockito</groupId>
-		    <artifactId>mockito-all</artifactId>
-		    <version>1.10.19</version>
-		    <scope>test</scope>
-		</dependency>
-		<dependency>
-		    <groupId>org.springframework</groupId>
-		    <artifactId>spring-test</artifactId>
-		    <version>${spring-framework.version}</version>
-		    <scope>test</scope>
-		</dependency>
 	    <dependency>
 	      <groupId>junit</groupId>
 	      <artifactId>junit</artifactId>
 	      <version>4.12</version>
 	      <scope>test</scope>
 	    </dependency>
-	    <dependency>
-		    <groupId>com.jayway.jsonpath</groupId>
-		    <artifactId>json-path</artifactId>
-		    <version>2.1.0</version>
-		    <scope>test</scope>
+	    
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-servlet</artifactId>
+			<version>9.2.10.v20150310</version>
 		</dependency>
 		<dependency>
-		    <groupId>com.jayway.jsonpath</groupId>
-		    <artifactId>json-path-assert</artifactId>
-		    <version>2.1.0</version>
-		    <scope>test</scope>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-webapp</artifactId>
+			<version>9.2.10.v20150310</version>
 		</dependency>
 		<dependency>
-			<groupId>org.hsqldb</groupId>
-			<artifactId>hsqldb</artifactId>
-			<version>2.3.3</version>
-			<scope>test</scope>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
 		</dependency>
-		
+
+
   </dependencies>
+
+	<build>
+	    <plugins>
+	      <plugin>
+	        <groupId>org.apache.tomcat.maven</groupId>
+	        <artifactId>tomcat7-maven-plugin</artifactId>
+	        <version>2.2</version>
+	        <configuration>  
+			  <url>http:// localhost:8080/manager/text</url>  
+			  <server>TomcatServer</server>
+			  <username>admin</username>  
+			  <password>admin</password>   
+			  <path>/mono</path>
+			  <warFile>${tomcat.dir.webapps}/mono.war</warFile>
+			</configuration> 
+	      </plugin>
+	      <plugin>
+	        <groupId>org.apache.maven.plugins</groupId>
+	        <artifactId>maven-war-plugin</artifactId>
+	        <version>2.6</version>
+	        <configuration>
+	          <outputDirectory>${tomcat.dir.webapps}</outputDirectory>
+	          <!--  <webappDirectory>${tomcat.dir.webapps}\mono</webappDirectory> -->
+	          <warName>mono</warName>
+	        </configuration>
+	      </plugin>
+	      <plugin>
+	        <groupId>org.apache.maven.plugins</groupId>
+	        <artifactId>maven-surefire-plugin</artifactId>
+	        <version>2.19.1</version>
+	        <configuration>
+	          <excludes>
+	            <exclude>**/*ControllerTest.java</exclude>
+	          </excludes>
+	        </configuration>
+	      </plugin>
+	    </plugins>
+	</build>
 </project>
