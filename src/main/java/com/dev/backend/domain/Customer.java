@@ -13,7 +13,8 @@ public class Customer implements Serializable {
 	private static final long serialVersionUID = -2784189889183530138L;
 
 	private String id, name, address, phone1, phone2;
-	private int credit, limit;
+	private float credit;
+	private int limit;
 	
 	@Id
 	@Column(name = "CUSTOMER_ID")
@@ -57,10 +58,10 @@ public class Customer implements Serializable {
 	}
 	
 	@Column(name = "CREDIT")
-	public int getCredit() {
+	public float getCredit() {
 		return credit;
 	}
-	public void setCredit(int credit) {
+	public void setCredit(float credit) {
 		this.credit = credit;
 	}
 	
