@@ -1,3 +1,31 @@
+Assumption: 
+
+  In tomcat-users.xml, there is entry : 
+  <role rolename="manager"/>
+  <role rolename="admin"/>
+  <role rolename="manager-gui"/>
+  <role rolename="manager-script"/>
+  <user username="admin" password="admin" roles="admin,manager,manager-gui,manager-script"/>
+  
+  In settings.xml of Maven home, there is entry :
+  </servers>
+    .....
+    <server>
+        <id>TomcatServer</id>
+        <username>admin</username>
+        <password>admin</password>
+    </server>
+  </servers>
+  
+  and 
+  
+  <pluginGroups>
+    ...
+    <pluginGroup>org.apache.tomcat.maven</pluginGroup>
+  </pluginGroups>
+  
+  -----------------------------------------------------------------------------
+
 A . To build and package WAR file:
 	
 	mvn clean install
@@ -6,15 +34,11 @@ B . To test the back end application
 
 	mvn clean test
 
-To deploy the web service, please follow the steps below: 
+C . To run tomcat
+    mvn tomcat7:run
 
-	1) Package WAR file (see A)
-		
-	2) Copy war file to tomcat/webapps folder
-	
-	3) To start tomcat :
-		cd tomcat/bin 
-		./startup.bat
+
+Step 1 : Modify property <tomcat.dir.webapps> indicating Tomcat webapps folder in pom.xml.  
+Step 2 : Package WAR file (see A)
+Step 3 : Run Tomcat on war file (see C)
 	 
-	 
- 
