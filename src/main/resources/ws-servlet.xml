@@ -34,6 +34,8 @@
     <bean id="salesOrderService" class="com.dev.backend.service.impl.SalesOrderServiceImpl">
         <property name="salesOrderDAO" ref="salesOrderDAO" />
         <property name="orderLineDAO" ref="orderLineDAO" />
+        <property name="productDAO" ref="productDAO" />
+        <property name="customerDAO" ref="customerDAO" />
     </bean>
     
     <bean id="orderLineService" class="com.dev.backend.service.impl.OrderLineServiceImpl">
