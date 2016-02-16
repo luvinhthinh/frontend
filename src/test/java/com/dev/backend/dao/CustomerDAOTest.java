@@ -57,7 +57,7 @@ public class CustomerDAOTest {
     @Transactional
     @Rollback(true)
     public void testFind(){
-		Assert.assertEquals(1000, customerDAO.findCustomerById("I001").getCredit());
+		Assert.assertEquals(1000, customerDAO.findCustomerById("I001").getCredit(), 1.0f);
 	}
 	
 	@Test
@@ -68,7 +68,7 @@ public class CustomerDAOTest {
 		c.setCredit(1005);
 		customerDAO.update(c);
 		
-		Assert.assertEquals(1005, customerDAO.findCustomerById("I001").getCredit());
+		Assert.assertEquals(1005, customerDAO.findCustomerById("I001").getCredit(), 1.0f);
 	}
 	
 	@After
