@@ -45,3 +45,8 @@ WORK DONE
 	 If New Input Total Price is 100 and Old Input Total Price is 200
      Then before update : Credit = 1000 + 200 = 1200
      And after update : Credit = 1200 + (100 - 200) = 1100
+
+     
+ROOM FOR IMPROVEMENT
+ - Refine insert/update new sales order by making this salesOrderDAO method transactional
+ 
