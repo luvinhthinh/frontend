@@ -5,9 +5,9 @@ import com.dev.backend.domain.SalesOrder;
 
 public interface SalesOrderDAO {
 	
-	public void insert(SalesOrder salesOrder);
-	public void delete(SalesOrder salesOrder);
-	public void update(SalesOrder salesOrder);
+	public boolean insert(SalesOrder salesOrder);
+	public boolean delete(SalesOrder salesOrder);
+	public boolean update(SalesOrder salesOrder);
 	public List<SalesOrder> selectAll();
 	public SalesOrder findSalesOrderById(String id);
 }

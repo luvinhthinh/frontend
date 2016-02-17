@@ -5,9 +5,9 @@ import com.dev.backend.domain.Customer;
 
 public interface CustomerDAO {
 	
-	public void insert(Customer customer);
-	public void delete(Customer customer);
-	public void update(Customer customer);
+	public boolean insert(Customer customer);
+	public boolean delete(Customer customer);
+	public boolean update(Customer customer);
 	public List<Customer> selectAll();
 	public Customer findCustomerById(String id);
 }
