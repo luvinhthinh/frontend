@@ -1,6 +1,7 @@
 package com.dev.backend.dao;
 
 import org.junit.Test;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -16,26 +17,21 @@ import com.dev.backend.domain.Customer;
 @ContextConfiguration(locations = "classpath:data-test.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
 public class CustomerDAOTest {
+	private final String CID = "I001";
 	
 	@Autowired
     private CustomerDAO customerDAO;
 	
 	private Customer createDummyCustomer(String id){
-		Customer c = new Customer();
-        c.setId(id);
-        c.setName("Test name 1");
-        c.setPhone1("012345698");
-        c.setCredit(1000);
-        c.setLimit(10000);
-        return c;
+		return new Customer(id, "Test name 1", null, "012345698", null, 1000, 10000);
 	}
 	
 	@Before
 	@Transactional
     @Rollback(true)
 	public void createDummyData(){
-        customerDAO.insert(createDummyCustomer("I001"));
-        Assert.assertNotNull(customerDAO.findCustomerById("I001"));
+        customerDAO.insert(createDummyCustomer(CID));
+        Assert.assertNotNull(customerDAO.findCustomerById(CID));
 	}
 	
 	@Test
@@ -50,31 +46,112 @@ public class CustomerDAOTest {
         
         customerDAO.delete(c1);
         Assert.assertNull(customerDAO.findCustomerById("I002"));
+    }
+	
+	@Test
+    @Transactional
+    @Rollback(true)
+    public void testAdd_Error_EmptyName(){
+		Customer c = createDummyCustomer("I002");
+		c.setName(null);
+		customerDAO.insert(c);
         
+        Customer c1 = customerDAO.findCustomerById("I002");
+        Assert.assertNull(c1);
+    }
+	
+	@Test
+    @Transactional
+    @Rollback(true)
+    public void testAdd_Error_EmptyID(){
+		int size0 = customerDAO.selectAll().size();
+		Customer c = createDummyCustomer(null);
+		customerDAO.insert(c);
+		Assert.assertEquals(size0, customerDAO.selectAll().size());
     }
 	
 	@Test
     @Transactional
     @Rollback(true)
     public void testFind(){
-		Assert.assertEquals(1000, customerDAO.findCustomerById("I001").getCredit(), 1.0f);
+		Assert.assertEquals(1000, customerDAO.findCustomerById(CID).getCredit(), 1.0f);
+		Assert.assertNull(customerDAO.findCustomerById("I200000"));
 	}
 	
 	@Test
     @Transactional
     @Rollback(true)
     public void testUpdate(){
-		Customer c = customerDAO.findCustomerById("I001");
+		Customer c = customerDAO.findCustomerById(CID);
 		c.setCredit(1005);
 		customerDAO.update(c);
 		
-		Assert.assertEquals(1005, customerDAO.findCustomerById("I001").getCredit(), 1.0f);
+		Assert.assertEquals(1005, customerDAO.findCustomerById(CID).getCredit(), 1.0f);
+	}
+	
+	@Test
+    @Transactional
+    @Rollback(true)
+    public void testUpdate_Error_EmptyID(){
+		Customer c = customerDAO.findCustomerById(CID);
+		c.setId(null);
+		c.setCredit(1500);
+		customerDAO.update(c);
+		
+		Assert.assertEquals(1000, customerDAO.findCustomerById(CID).getCredit(), 1.0f);
+	}
+	
+	@Test
+    @Transactional
+    @Rollback(true)
+    public void testUpdate_Error_EmptyName(){
+		Customer c = customerDAO.findCustomerById(CID);
+		c.setName(null);
+		c.setCredit(1500);
+		customerDAO.update(c);
+		
+		Assert.assertEquals(1000, customerDAO.findCustomerById(CID).getCredit(), 1.0f);
+	}
+	
+	@Test
+    @Transactional
+    @Rollback(true)
+    public void testUpdate_Error_InvalidID(){
+		Customer c = createDummyCustomer("I000000");
+		customerDAO.update(c);
+		Assert.assertNull(customerDAO.findCustomerById("I000000"));
+	}
+	
+	@Test
+    @Transactional
+    @Rollback(true)
+    public void testDelete_Error_InvalidID(){
+		int size0 = customerDAO.selectAll().size();
+		Customer c = createDummyCustomer("I000000");
+		customerDAO.delete(c);
+		Assert.assertNull(customerDAO.findCustomerById("I000000"));
+		Assert.assertEquals(size0, customerDAO.selectAll().size());
+	}
+	
+	@Test
+    @Transactional
+    @Rollback(true)
+    public void testSelectAll(){
+		int size0 = customerDAO.selectAll().size();
+		customerDAO.insert(createDummyCustomer("I002"));
+		customerDAO.insert(createDummyCustomer("I003"));
+		Assert.assertEquals(size0+2, customerDAO.selectAll().size());
+		customerDAO.delete(customerDAO.findCustomerById("I002"));
+		customerDAO.delete(customerDAO.findCustomerById("I003"));
+		Assert.assertEquals(size0, customerDAO.selectAll().size());
 	}
 	
 	@After
     @Transactional
     @Rollback(true)
     public void tearDown(){
-		customerDAO.delete(customerDAO.findCustomerById("I001"));
+		customerDAO.delete(customerDAO.findCustomerById(CID));
+		Assert.assertNull(customerDAO.findCustomerById(CID));
+		Assert.assertEquals(0, customerDAO.selectAll().size());
 	}
 }

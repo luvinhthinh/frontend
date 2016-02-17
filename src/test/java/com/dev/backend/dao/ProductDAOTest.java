@@ -16,6 +16,7 @@ import com.dev.backend.domain.Product;
 @ContextConfiguration(locations = "classpath:data-test.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
 public class ProductDAOTest {
+	private final String PID = "P001";
 	
 	@Autowired
     private ProductDAO productDAO;
@@ -33,47 +34,124 @@ public class ProductDAOTest {
 	@Transactional
     @Rollback(true)
 	public void createDummyData(){
-		productDAO.insert(createDummyProduct("P001"));
-        Assert.assertNotNull(productDAO.findProductById("P001"));
+		productDAO.insert(createDummyProduct(PID));
+        Assert.assertNotNull(productDAO.findProductById(PID));
 	}
 	
 	@Test
     @Transactional
     @Rollback(true)
     public void testAddAndRemove(){
-		Product c = createDummyProduct("P002");
-        productDAO.insert(c);
+		Product p = createDummyProduct("P002");
+        productDAO.insert(p);
         
-        Product c1 = productDAO.findProductById("P002");
-        Assert.assertNotNull(c1);
+        Product p1 = productDAO.findProductById("P002");
+        Assert.assertNotNull(p1);
         
-        productDAO.delete(c1);
+        productDAO.delete(p1);
         Assert.assertNull(productDAO.findProductById("P002"));
-        
+    }
+	
+	@Test
+    @Transactional
+    @Rollback(true)
+    public void testAdd_Error_EmptyID(){
+		int size0 = productDAO.selectAll().size();
+		Product p = createDummyProduct(null);
+        productDAO.insert(p);
+        Assert.assertEquals(size0, productDAO.selectAll().size());
+    }
+	
+	@Test
+    @Transactional
+    @Rollback(true)
+    public void testAdd_Error_EmptyDescription(){
+		Product p = createDummyProduct("P002");
+		p.setDescription(null);
+        productDAO.insert(p);
+        Assert.assertNull(productDAO.findProductById("P002"));
     }
 	
 	@Test
     @Transactional
     @Rollback(true)
     public void testFind(){
-		Assert.assertEquals(10, productDAO.findProductById("P001").getQuantity());
+		Assert.assertEquals(10, productDAO.findProductById(PID).getQuantity());
 	}
 	
 	@Test
     @Transactional
     @Rollback(true)
     public void testUpdate(){
-		Product c = productDAO.findProductById("P001");
+		Product c = productDAO.findProductById(PID);
 		c.setQuantity(50);
 		productDAO.update(c);
 		
-		Assert.assertEquals(50, productDAO.findProductById("P001").getQuantity());
+		Assert.assertEquals(50, productDAO.findProductById(PID).getQuantity());
+	}
+	
+	@Test
+    @Transactional
+    @Rollback(true)
+    public void testUpdate_Error_EmptyID(){
+		Product p = productDAO.findProductById(PID);
+		p.setId(null);
+		productDAO.update(p);
+		
+		Assert.assertEquals(10, productDAO.findProductById(PID).getQuantity());
+	}
+	
+	@Test
+    @Transactional
+    @Rollback(true)
+    public void testUpdate_Error_EmptyDescription(){
+		Product p = productDAO.findProductById(PID);
+		p.setDescription(null);
+		productDAO.update(p);
+		
+		Assert.assertEquals(10, productDAO.findProductById(PID).getQuantity());
+	}
+	
+	@Test
+    @Transactional
+    @Rollback(true)
+    public void testUpdate_Error_InvalidID(){
+		Product p = productDAO.findProductById(PID);
+		p.setId("P1234");
+		productDAO.update(p);
+		
+		Assert.assertEquals(10, productDAO.findProductById(PID).getQuantity());
+	}
+	
+	@Test
+    @Transactional
+    @Rollback(true)
+    public void testDelete_Error_InvalidID(){
+		int size0 = productDAO.selectAll().size();
+		Product p = createDummyProduct("P00001");
+		productDAO.delete(p);
+		Assert.assertNull(productDAO.findProductById(p.getId()));
+		Assert.assertEquals(size0, productDAO.selectAll().size());
+	}
+	
+	@Test
+    @Transactional
+    @Rollback(true)
+    public void testSelectAll(){
+		int size0 = productDAO.selectAll().size();
+		productDAO.insert(createDummyProduct("P002"));
+		productDAO.insert(createDummyProduct("P003"));
+		Assert.assertEquals(size0+2, productDAO.selectAll().size());
+		productDAO.delete(productDAO.findProductById("P002"));
+		productDAO.delete(productDAO.findProductById("P003"));
+		Assert.assertEquals(size0, productDAO.selectAll().size());
 	}
 	
 	@After
     @Transactional
     @Rollback(true)
     public void tearDown(){
-		productDAO.delete(productDAO.findProductById("P001"));
+		productDAO.delete(productDAO.findProductById(PID));
+		Assert.assertEquals(0, productDAO.selectAll().size());
 	}
 }

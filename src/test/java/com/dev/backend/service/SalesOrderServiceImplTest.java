@@ -21,7 +21,7 @@ import com.dev.backend.domain.Product;
 import com.dev.backend.domain.SalesOrder;
 import com.dev.backend.service.impl.SalesOrderServiceImpl;
 
-@ContextConfiguration(locations = "classpath:data-test.xml")
+@ContextConfiguration(locations = "classpath:ws-servlet-test.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
 public class SalesOrderServiceImplTest {
 	
