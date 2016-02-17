@@ -16,6 +16,18 @@ public class Customer implements Serializable {
 	private float credit;
 	private int limit;
 	
+	public Customer(){}
+	
+	public Customer(String id, String name, String address, String phone1, String phone2, float credit, int limit){
+		this.id = id;
+		this.name = name;
+		this.address = address;
+		this.phone1 = phone1;
+		this.phone2 = phone2;
+		this.credit = credit;
+		this.limit = limit;
+	}
+	
 	@Id
 	@Column(name = "CUSTOMER_ID")
 	public String getId() {

@@ -18,6 +18,13 @@ public class SalesOrder implements Serializable {
 	private String orderNumber, customerId;
 	private float totalPrice;
 	
+	public SalesOrder(){}
+	public SalesOrder(String orderNumber, String customerId, float totalPrice){
+		setOrderNumber(orderNumber);
+		setCustomerId(customerId);
+		setTotalPrice(totalPrice);
+	}
+	
 	private List<OrderLine> orderList;
 	
 	@Id

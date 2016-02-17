@@ -16,6 +16,14 @@ public class Product implements Serializable{
 	private float price;
 	private int quantity;
 	
+	public Product(){}
+	public Product(String id, String description, float price, int quantity){
+		setId(id);
+		setDescription(description);
+		setPrice(price);
+		setQuantity(quantity);
+	}
+	
 	@Id
 	@Column(name = "PRODUCT_ID")
 	public String getId() {
