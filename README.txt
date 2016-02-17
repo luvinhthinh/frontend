@@ -49,4 +49,6 @@ WORK DONE
      
 ROOM FOR IMPROVEMENT
  - Refine insert/update new sales order by making this salesOrderDAO method transactional
+ - add test cases for Controller (REST SERVICE) and integrate to Jenkins
+  
  
