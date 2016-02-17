@@ -7,11 +7,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.dev.backend.dao.*;
 import com.dev.backend.domain.*;
 import com.dev.backend.service.SalesOrderService;
 
 public class SalesOrderServiceImpl implements SalesOrderService {
+	private static final Logger logger = Logger.getLogger(SalesOrderServiceImpl.class);
+	
 	SalesOrderDAO salesOrderDAO;
 	OrderLineDAO orderLineDAO;
 	ProductDAO productDAO;
@@ -41,7 +46,8 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 	
 	/**
 	 * To validate input order if it satisfies : 
-	 * For each product added : Quantities that have been requested are less than or equal current inventory balance.
+	 * For each product added, check: 
+	 * Quantities that have been requested are less than or equal current inventory balance.
 	 * Total price of sales order is less than or equal (Customer Credit Limit - Customer Current Credit).
 	 * @param salesOrder
 	 * @return
@@ -102,28 +108,61 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 	
 	
 	@Override
+	@Transactional
 	public void insert(SalesOrder salesOrder) {
-		// Update customer credit
-		Customer c = customerDAO.findCustomerById(salesOrder.getCustomerId());
-		c.setCredit(c.getCredit() + salesOrder.getTotalPrice());
-		customerDAO.update(c);
+		boolean action1 = true, action2 = true, action3 = true, action4 = true;
 		
-		// Insert order
-		salesOrderDAO.insert(salesOrder);
+		action1 = salesOrderDAO.insert(salesOrder);
 		
-		List<OrderLine> lines = salesOrder.getOrderList();
-    	if(lines != null && !lines.isEmpty()){
-    		for(OrderLine line : lines){
-    			
-    			// Update product quantity
-    			Product p = productDAO.findProductById(line.getProductId());
-    			p.setQuantity(p.getQuantity() - line.getQuantity());
-    			productDAO.update(p);
-    			
-    			// Insert order line
-    			orderLineDAO.insert(line);
-    		}
-    	}
+		//Successfully add new sales order
+		if(action1){
+			Customer c = customerDAO.findCustomerById(salesOrder.getCustomerId());
+			float bk_credit = c.getCredit();
+			c.setCredit(bk_credit + salesOrder.getTotalPrice());
+			action2 = customerDAO.update(c);
+			
+			//Successfully update credit
+			if(action2){
+				List<OrderLine> lines = salesOrder.getOrderList();
+		    	if(lines != null && !lines.isEmpty()){
+		    		for(OrderLine line : lines){
+		    			// Insert order line
+		    			action4 &= orderLineDAO.insert(line);
+		    			
+		    			//Successfully insert new order line
+		    			if(action4){
+		    				// Update product quantity
+			    			Product p = productDAO.findProductById(line.getProductId());
+			    			int bk_quantity = p.getQuantity();
+			    			p.setQuantity(bk_quantity - line.getQuantity());
+			    			action3 &= productDAO.update(p);
+			    			
+			    			//Fail to update product stock
+			    			// -> Rollback (remove new order line)
+			    			if(!action3){
+			    				orderLineDAO.delete(line);
+			    			}
+		    			}else{
+		    				break;
+		    			}
+		    		}
+		    	}
+		    	
+		    	// Fail to update product stock or insert new order line
+		    	// -> Rollback (revert customer credit and remove new sales order)
+		    	if(!action3 || !action4){
+					c.setCredit(bk_credit);
+					customerDAO.update(c);
+					
+					salesOrderDAO.delete(salesOrder);
+				}
+			}
+			//Fail to update credit -> Rollback ( remove new sales order)
+			else{
+				salesOrderDAO.delete(salesOrder);
+			}
+		}
+		
 	}
 
 	@Override
@@ -140,30 +179,90 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 
 	@Override
 	public void update(SalesOrder salesOrder) {
-		// Update customer credit : New credit = Current credit + (current total - old total)
-		Customer c = customerDAO.findCustomerById(salesOrder.getCustomerId());
-		float oldTotal = salesOrderDAO.findSalesOrderById(salesOrder.getOrderNumber()).getTotalPrice();
-		c.setCredit(c.getCredit() + (salesOrder.getTotalPrice() - oldTotal));
-		customerDAO.update(c);
+		boolean action1 = true, action2 = true, action3 = true, action4 = true;
 		
-		// update sales order
-		salesOrderDAO.update(salesOrder);
-		
-		List<OrderLine> lines = salesOrder.getOrderList();
-    	if(lines != null && !lines.isEmpty()){
-    		for(OrderLine line : lines){
-    			// Update product quantity if such record exist, otherwise add new order line
-    			OrderLine oldLine = orderLineDAO.findOrderLineById(salesOrder.getOrderNumber(), line.getProductId());
-    			if(oldLine != null){
-    				Product p = productDAO.findProductById(line.getProductId());
-    				int oldQuantity = oldLine.getQuantity();
-    				p.setQuantity(p.getQuantity() - (line.getQuantity() - oldQuantity));
-        			productDAO.update(p);
-    			}else{
-    				orderLineDAO.insert(line);
-    			}
-    		}
-    	}
+		try{
+			// Preserve data from DB
+			SalesOrder oldSalesOrder = salesOrderDAO.findSalesOrderById(salesOrder.getOrderNumber());
+			String oldCustomerId = oldSalesOrder.getCustomerId();
+			float oldTotalPrice = oldSalesOrder.getTotalPrice();
+			
+			// update sales order
+			action2 = salesOrderDAO.update(salesOrder);
+			if(action2){
+				Customer c = customerDAO.findCustomerById(salesOrder.getCustomerId());
+				float bk_credit = c.getCredit();
+				c.setCredit(bk_credit + (salesOrder.getTotalPrice() - oldTotalPrice));
+				action1 = customerDAO.update(c);
+				
+				// Successfully update customer credit
+				if(action1){
+					List<OrderLine> lines = salesOrder.getOrderList();
+			    	if(lines != null && !lines.isEmpty()){
+			    		for(OrderLine line : lines){
+			    			
+			    			// Update product quantity if such record exist, otherwise add new order line
+			    			OrderLine oldLine = orderLineDAO.findOrderLineById(salesOrder.getOrderNumber(), line.getProductId());
+			    			Product p = productDAO.findProductById(line.getProductId());
+			    			int oldStock = p.getQuantity();
+			    			
+			    			//Existing record
+			    			if(oldLine != null){
+			    				int oldQuantity = oldLine.getQuantity();
+			    				p.setQuantity(p.getQuantity() - (line.getQuantity() - oldQuantity));
+			    				action3 &= productDAO.update(p);
+			    				action4 &= orderLineDAO.update(line);
+			    				
+			    				//If fails to update new product stock or update order line
+			    				// -> Rollback 
+			    				if(!action3 || !action4){
+				    				p.setQuantity(oldStock);
+				    				productDAO.update(p);
+				    				
+				    				line.setQuantity(oldQuantity);
+				    				orderLineDAO.update(line);
+				    			}
+			    			}
+			    			// New record
+			    			else{
+				    			p.setQuantity(oldStock - line.getQuantity());
+				    			action3 &= productDAO.update(p);
+				    			action4 &= orderLineDAO.insert(line);
+				    			
+				    			//If fails to update new product stock or add order line
+			    				// -> Rollback 
+				    			if(!action3 || !action4){
+				    				p.setQuantity(oldStock);
+				    				productDAO.update(p);
+				    				orderLineDAO.delete(line);
+				    			}
+			    			}
+			    			
+			    		}
+			    	}
+				
+			    	// Fail to update product stock or insert/update new order line
+			    	// -> Rollback (revert customer credit and remove new sales order)
+			    	if(!action3 || !action4){
+						c.setCredit(bk_credit);
+						customerDAO.update(c);
+						
+						oldSalesOrder.setCustomerId(oldCustomerId);
+						oldSalesOrder.setTotalPrice(oldTotalPrice);
+						salesOrderDAO.update(oldSalesOrder);
+					}
+				}
+				// Fail to update customer credit
+				// -> Rollback (Revert update of sales order)
+				else{
+					oldSalesOrder.setCustomerId(oldCustomerId);
+					oldSalesOrder.setTotalPrice(oldTotalPrice);
+					salesOrderDAO.update(oldSalesOrder);
+				}
+			}
+		}catch(Exception e){
+			logger.error(e);
+		}
 	}
 
 	@Override
