@@ -5,6 +5,7 @@ TECHNOLOGIES USED:
  - JUnit
  - Tomcat for application server
  - MySQL for database
+ - Maven for building and packaging
 
 WORK DONE
 
