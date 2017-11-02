@@ -1,3 +1,11 @@
+TECHNOLOGIES USED: 
+ - java core and java swing
+ - Spring rest
+ - Hibernate
+ - JUnit
+ - Tomcat for application server
+ - MySQL for database
+
 WORK DONE
 
 - DB Creation of 4 tables : Customer, Product, Sales_Order and Order_Line
